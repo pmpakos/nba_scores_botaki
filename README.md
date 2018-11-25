@@ -1,6 +1,6 @@
-# nba_stats_botaki
+# nba_scores_botaki
 
-[@nba_stats_botaki](https://twitter.com/nbascoresbotaki)
+[@nba_scores_botaki](https://twitter.com/nbascoresbotaki)
 
 Twitter bot, posting NBA Scores every morning at 10:00 AM (Athens).
 
