@@ -5,16 +5,51 @@ import datetime
 from bs4 import BeautifulSoup
 import urllib.request
 import time
+import bitly_api
 
 # CONSUMER_KEY = '***'
 # CONSUMER_SECRET = '***'
 # ACCESS_TOKEN = '***'
 # ACCESS_TOKEN_SECRET = '***'
-
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 api = tweepy.API(auth)
 
+# ACCESS_TOKEN_BITLY = '***'
+bitly = bitly_api.Connection(access_token=ACCESS_TOKEN_BITLY)
+
+
+fullnames_dict={}
+fullnames_dict['Boston'] = 'Boston Celtics'
+fullnames_dict['Atlanta'] = 'Atlanta Hawks'
+fullnames_dict['Minnesota'] = 'Minnesota Timberwolves'
+fullnames_dict['Brooklyn'] = 'Brooklyn Nets'
+fullnames_dict['Miami'] = 'Miami Heat'
+fullnames_dict['Chicago'] = 'Chicago Bulls'
+fullnames_dict['Orlando'] = 'Orlando Magic'
+fullnames_dict['Denver'] = 'Denver Nuggets'
+fullnames_dict['Houston'] = 'Houston Rockets'
+fullnames_dict['Detroit'] =  'Detroit Pistons'
+fullnames_dict['Portland'] =  'Portland Trailblazers'
+fullnames_dict['Golden State'] =  'Golden State Warriors'
+fullnames_dict['San Antonio'] =  'San Antonio Spurs'
+fullnames_dict['Indiana'] =  'Indiana Pacers'
+fullnames_dict['Memphis'] =  'Memphis Grizzlies'
+fullnames_dict['LA Clippers'] =  'Los Angeles Clippers'
+fullnames_dict['Utah'] =  'Utah Jazz'
+fullnames_dict['LA Lakers'] = 'Los Angeles Lakers' 
+fullnames_dict['Phoenix'] =  'Phoenix Suns'
+fullnames_dict['Milwaukee'] =  'Milwaukee Bucks'
+fullnames_dict['New Orleans'] =  'New Orleans Pelicans'
+fullnames_dict['New York'] =  'New York Knicks'
+fullnames_dict['Charlotte'] =  'Charlotte Hornets '
+fullnames_dict['Oklahoma City'] =  'Oklahoma City Thunder'
+fullnames_dict['Cleveland'] =  'Cleveland Cavaliers'
+fullnames_dict['Philadelphia'] =  'Philadelphia 76ers'
+fullnames_dict['Washington'] =  'Washington Wizards'
+fullnames_dict['Toronto'] =  'Toronto Raptors'
+fullnames_dict['Sacramento'] =  'Sacramento Kings'
+fullnames_dict['Dallas'] =  'Dallas Mavericks'
 
 handles_dict={}
 handles_dict['Boston'] = '@celtics'
@@ -48,6 +83,7 @@ handles_dict['Toronto'] =  '@Raptors'
 handles_dict['Sacramento'] =  '@SacramentoKings'
 handles_dict['Dallas'] =  '@dallasmavs'
 
+
 def find_between(s,first,last):
     try:
         start = s.index( first ) + len( first )
@@ -56,7 +92,9 @@ def find_between(s,first,last):
     except ValueError:
         return ""
 
+
 def create_tweet(result):
+    #####################################################################v
     match = result.find('table',attrs={'class':'teams'})        
     home_team = match.find_all('tr')[1]
     away_team = match.find_all('tr')[0]
@@ -66,30 +104,25 @@ def create_tweet(result):
     
     home_score = find_between(str(home_team.find_all('td')[1]),"right\">","</td>")
     away_score = find_between(str(away_team.find_all('td')[1] ),"right\">","</td>")
-    return " ".join((away_team_name,"("+handles_dict[away_team_name]+")",away_score,'-', home_team_name,"("+handles_dict[home_team_name]+")" ,home_score))
+    
+    score = " ".join((fullnames_dict[away_team_name],"("+handles_dict[away_team_name]+")",away_score,'-', fullnames_dict[home_team_name],"("+handles_dict[home_team_name]+")" ,home_score))
+    #####################################################################v
+    links = result.find('p',attrs={'class':'links'}).find_all('a')
+    base_url = "https://www.basketball-reference.com"
+    shot_chart = base_url+find_between(str(links[2]),"\"","\"")
+    play_by_play = base_url+find_between(str(links[1]),"\"","\"")
+    boxscore = base_url+find_between(str(links[0]),"\"","\"")
+
+    base_bitly = "bit.ly/"
+    play_by_play = "Play-By-Play\t : " + base_bitly + bitly.shorten(play_by_play)['hash']
+    shot_chart = "Shot Chart\t : " + base_bitly + bitly.shorten(shot_chart)['hash']
+    boxscore = "Boxscore\t : " + base_bitly + bitly.shorten(boxscore)['hash'] + "\n" + base_bitly + bitly.shorten(boxscore)['hash']
+    urls="".join((play_by_play,"\n",shot_chart, "\n", boxscore))
+
+    tweet = "".join((score,"\n",urls))
+    return tweet
         
     
-#     details = result.find_all('table')[1]
-#     quarters_scores = details.find_all('td',attrs={"class":"center"})
-    
-#     q1_0 = find_between(str(quarters_scores[0]),"center\">","</td>")
-#     q2_0 = find_between(str(quarters_scores[1]),"center\">","</td>")
-#     q3_0 = find_between(str(quarters_scores[2]),"center\">","</td>")
-#     q4_0 = find_between(str(quarters_scores[3]),"center\">","</td>")
-
-#     q1_1 = find_between(str(quarters_scores[4]),"center\">","</td>")
-#     q2_1 = find_between(str(quarters_scores[5]),"center\">","</td>")
-#     q3_1 = find_between(str(quarters_scores[6]),"center\">","</td>")
-#     q4_1 = find_between(str(quarters_scores[7]),"center\">","</td>")
-    
-#     pts_leader = 
-#     trb_leader = 
-#     print()
-#     print("{:15} {:3} {:3} {:3} {:3} | {:4}".format('','1','2','3','4','Final'))
-#     print('-'*40)
-#     print("{:15} {:3} {:3} {:3} {:3} | {:4}".format(away_team_name,q1_0,q2_0,q3_0,q4_0,away_score))
-#     print("{:15} {:3} {:3} {:3} {:3} | {:4}".format(home_team_name,q1_1,q2_1,q3_1,q4_1,home_score))
-#     print()
     
 date = str(datetime.date.today()-datetime.timedelta(1)).split('-')
 urlpage = 'https://www.basketball-reference.com/boxscores/?month='+date[1]+'&day='+date[2]+'&year='+date[0]
@@ -108,5 +141,6 @@ print(len(results),'NBA Games on ',date[1],'-',date[2],'-',date[0],'\n')
 for result in results:
     reso1 = create_tweet(result)
     print(reso1)
-    time.sleep(30)
     api.update_status(reso1)
+    time.sleep(30)
+    
