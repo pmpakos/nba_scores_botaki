@@ -109,15 +109,16 @@ def create_tweet(result):
     #####################################################################v
     links = result.find('p',attrs={'class':'links'}).find_all('a')
     base_url = "https://www.basketball-reference.com"
+    boxscore1 = base_url+find_between(str(links[0]),"\"","\"")    
+    play_by_play = base_url+find_between(str(links[1]),"\"","\"")    
     shot_chart = base_url+find_between(str(links[2]),"\"","\"")
-    play_by_play = base_url+find_between(str(links[1]),"\"","\"")
-    boxscore = base_url+find_between(str(links[0]),"\"","\"")
 
     base_bitly = "bit.ly/"
+    boxscore = "Boxscore\t : " + base_bitly + bitly.shorten(boxscore1)['hash']
     play_by_play = "Play-By-Play\t : " + base_bitly + bitly.shorten(play_by_play)['hash']
     shot_chart = "Shot Chart\t : " + base_bitly + bitly.shorten(shot_chart)['hash']
-    boxscore = "Boxscore\t : " + base_bitly + bitly.shorten(boxscore)['hash'] + "\n" + base_bitly + bitly.shorten(boxscore)['hash']
-    urls="".join((play_by_play,"\n",shot_chart, "\n", boxscore))
+    boxscore2 = base_bitly + bitly.shorten(boxscore1)['hash']
+    urls="".join((boxscore, "\n", play_by_play,"\n",shot_chart, "\n", boxscore2))
 
     tweet = "".join((score,"\n",urls))
     return tweet
@@ -142,5 +143,5 @@ for result in results:
     reso1 = create_tweet(result)
     print(reso1)
     api.update_status(reso1)
-    time.sleep(30)
+    time.sleep(10)
     
