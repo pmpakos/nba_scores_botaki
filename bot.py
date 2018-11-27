@@ -1,9 +1,13 @@
 from secrets import *
+from data import *
 
 import tweepy
 import datetime
 from bs4 import BeautifulSoup
 import urllib.request
+import requests
+from selenium import webdriver
+import os
 import time
 import bitly_api
 
@@ -19,70 +23,14 @@ api = tweepy.API(auth)
 bitly = bitly_api.Connection(access_token=ACCESS_TOKEN_BITLY)
 
 
-fullnames_dict={}
-fullnames_dict['Boston'] = 'Boston Celtics'
-fullnames_dict['Atlanta'] = 'Atlanta Hawks'
-fullnames_dict['Minnesota'] = 'Minnesota Timberwolves'
-fullnames_dict['Brooklyn'] = 'Brooklyn Nets'
-fullnames_dict['Miami'] = 'Miami Heat'
-fullnames_dict['Chicago'] = 'Chicago Bulls'
-fullnames_dict['Orlando'] = 'Orlando Magic'
-fullnames_dict['Denver'] = 'Denver Nuggets'
-fullnames_dict['Houston'] = 'Houston Rockets'
-fullnames_dict['Detroit'] =  'Detroit Pistons'
-fullnames_dict['Portland'] =  'Portland Trailblazers'
-fullnames_dict['Golden State'] =  'Golden State Warriors'
-fullnames_dict['San Antonio'] =  'San Antonio Spurs'
-fullnames_dict['Indiana'] =  'Indiana Pacers'
-fullnames_dict['Memphis'] =  'Memphis Grizzlies'
-fullnames_dict['LA Clippers'] =  'Los Angeles Clippers'
-fullnames_dict['Utah'] =  'Utah Jazz'
-fullnames_dict['LA Lakers'] = 'Los Angeles Lakers' 
-fullnames_dict['Phoenix'] =  'Phoenix Suns'
-fullnames_dict['Milwaukee'] =  'Milwaukee Bucks'
-fullnames_dict['New Orleans'] =  'New Orleans Pelicans'
-fullnames_dict['New York'] =  'New York Knicks'
-fullnames_dict['Charlotte'] =  'Charlotte Hornets '
-fullnames_dict['Oklahoma City'] =  'Oklahoma City Thunder'
-fullnames_dict['Cleveland'] =  'Cleveland Cavaliers'
-fullnames_dict['Philadelphia'] =  'Philadelphia 76ers'
-fullnames_dict['Washington'] =  'Washington Wizards'
-fullnames_dict['Toronto'] =  'Toronto Raptors'
-fullnames_dict['Sacramento'] =  'Sacramento Kings'
-fullnames_dict['Dallas'] =  'Dallas Mavericks'
+CHROME_PATH = '/usr/bin/google-chrome'
+CHROMEDRIVER_PATH = os.path.join(os.getcwd(), 'chromedriver')
+WINDOW_SIZE = "1920,1080"
 
-handles_dict={}
-handles_dict['Boston'] = '@celtics'
-handles_dict['Atlanta'] = '@ATLHawks'
-handles_dict['Minnesota'] = '@Timberwolves'
-handles_dict['Brooklyn'] = '@BrooklynNets'
-handles_dict['Miami'] = '@MiamiHEAT'
-handles_dict['Chicago'] = '@chicagobulls'
-handles_dict['Orlando'] = '@OrlandoMagic'
-handles_dict['Denver'] = '@nuggets'
-handles_dict['Houston'] = '@HoustonRockets'
-handles_dict['Detroit'] =  '@DetroitPistons'
-handles_dict['Portland'] =  '@trailblazers'
-handles_dict['Golden State'] =  '@warriors'
-handles_dict['San Antonio'] =  '@spurs'
-handles_dict['Indiana'] =  '@Pacers'
-handles_dict['Memphis'] =  '@memgrizz'
-handles_dict['LA Clippers'] =  '@LAClippers'
-handles_dict['Utah'] =  '@utahjazz'
-handles_dict['LA Lakers'] = '@Lakers' 
-handles_dict['Phoenix'] =  '@Suns'
-handles_dict['Milwaukee'] =  '@Bucks'
-handles_dict['New Orleans'] =  '@PelicansNBA'
-handles_dict['New York'] =  '@nyknicks'
-handles_dict['Charlotte'] =  '@hornets'
-handles_dict['Oklahoma City'] =  '@okcthunder'
-handles_dict['Cleveland'] =  '@cavs'
-handles_dict['Philadelphia'] =  '@sixers'
-handles_dict['Washington'] =  '@WashWizards'
-handles_dict['Toronto'] =  '@Raptors'
-handles_dict['Sacramento'] =  '@SacramentoKings'
-handles_dict['Dallas'] =  '@dallasmavs'
-
+chrome_options = webdriver.chrome.options.Options()  
+chrome_options.add_argument("--headless")  
+chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
+chrome_options.binary_location = CHROME_PATH
 
 def find_between(s,first,last):
     try:
@@ -95,53 +43,65 @@ def find_between(s,first,last):
 
 def create_tweet(result):
     #####################################################################v
-    match = result.find('table',attrs={'class':'teams'})        
-    home_team = match.find_all('tr')[1]
-    away_team = match.find_all('tr')[0]
+    match = result.find('tbody',attrs={'id':'teams'})        
+
+    home_team = match.find('tr',attrs={'class':'home'})
+    away_team = match.find('tr',attrs={'class':'away'})
+
+    home_team_name = find_between(str(home_team.find('span',attrs={'class':'sb-team-short'})),"short\">","</span>")
+    away_team_name = find_between(str(away_team.find('span',attrs={'class':'sb-team-short'})),"short\">","</span>")
     
-    home_team_name = find_between(str(home_team.find_all('td')[0].find('a')),".html\">","</a>")
-    away_team_name = find_between(str(away_team.find_all('td')[0].find('a')),".html\">","</a>")
+    home_score = find_between(str(home_team.find('td',attrs={'class':'total'})),"<span>","</span>")
+    away_score = find_between(str(away_team.find('td',attrs={'class':'total'})),"<span>","</span>")
     
-    home_score = find_between(str(home_team.find_all('td')[1]),"right\">","</td>")
-    away_score = find_between(str(away_team.find_all('td')[1] ),"right\">","</td>")
-    
-    score = " ".join((fullnames_dict[away_team_name],"("+handles_dict[away_team_name]+")",away_score,'-', fullnames_dict[home_team_name],"("+handles_dict[home_team_name]+")" ,home_score))
+    score = " ".join((fullnames_dict[away_team_name],"("+handles_dict[away_team_name]+")",away_score,'-', fullnames_dict[home_team_name],"("+handles_dict[home_team_name]+")" ,home_score))    
     #####################################################################v
-    links = result.find('p',attrs={'class':'links'}).find_all('a')
-    base_url = "https://www.basketball-reference.com"
-    boxscore1 = base_url+find_between(str(links[0]),"\"","\"")    
-    play_by_play = base_url+find_between(str(links[1]),"\"","\"")    
-    shot_chart = base_url+find_between(str(links[2]),"\"","\"")
+    links = result.find('section',attrs={'class':'sb-actions'}).find_all('a')
+    gameId = find_between(str(links[0]),"gameId=","\"")
+    
+    base_url = "http://www.espn.com"
+    recap = base_url + "/nba/recap?gameId=" + gameId
+    boxscore = base_url + "/nba/boxscore?gameId=" + gameId
+    play_by_play = base_url + "/nba/playbyplay?gameId=" + gameId
+    gamecast = base_url + "/nba/game?gameId=" + gameId
+
+    recap = base_url + "/nba/recap?gameId=" + gameId
+    boxscore = base_url + "/nba/boxscore?gameId=" + gameId
+    playbyplay = base_url + "/nba/playbyplay?gameId=" + gameId
+    gamecast = base_url + "/nba/game?gameId=" + gameId
 
     base_bitly = "bit.ly/"
-    boxscore = "Boxscore\t : " + base_bitly + bitly.shorten(boxscore1)['hash']
+    recap = "Recap\t\t : " + base_bitly + bitly.shorten(recap)['hash']
+    boxscore = "Boxscore\t : " + base_bitly + bitly.shorten(boxscore)['hash']
     play_by_play = "Play-By-Play\t : " + base_bitly + bitly.shorten(play_by_play)['hash']
-    shot_chart = "Shot Chart\t : " + base_bitly + bitly.shorten(shot_chart)['hash']
-    boxscore2 = base_bitly + bitly.shorten(boxscore1)['hash']
-    urls="".join((boxscore, "\n", play_by_play,"\n",shot_chart, "\n", boxscore2))
+    gamecast = base_bitly + bitly.shorten(gamecast)['hash']
+    urls="".join((recap, "\n", boxscore, "\n", play_by_play,"\n",gamecast))
 
     tweet = "".join((score,"\n",urls))
     return tweet
+
         
     
     
 date = str(datetime.date.today()-datetime.timedelta(1)).split('-')
-urlpage = 'https://www.basketball-reference.com/boxscores/?month='+date[1]+'&day='+date[2]+'&year='+date[0]
+urlpage = 'http://www.espn.com/nba/scoreboard/_/date/'+date[0]+date[1]+date[2]
 
-# query the website and return the html to the variable 'page'
-page = urllib.request.urlopen(urlpage)
+driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
+driver.get(urlpage)
+res = driver.execute_script("return document.documentElement.outerHTML")
+driver.quit()
+
 # parse the html using beautiful soup and store in variable 'soup'
-soup = BeautifulSoup(page, 'html.parser')
+soup = BeautifulSoup(res,'lxml')
 
 # find results within table
-table = soup.find('div', attrs={'class': 'game_summaries'})
-results = table.find_all('div')
+table = soup.find('div',attrs={'id':'events'})
+results = table.find_all('article',attrs={'class':'scoreboard'})
 
 print(len(results),'NBA Games on ',date[1],'-',date[2],'-',date[0],'\n')
-
 for result in results:
     reso1 = create_tweet(result)
-    print(reso1)
+    print(reso1,'\n')
     api.update_status(reso1)
     time.sleep(10)
     

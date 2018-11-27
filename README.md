@@ -4,7 +4,7 @@
 
 Twitter bot, posting NBA Scores every morning at 12:00 PM (Athens).
 
-Libraries used : BeautifulSoup, Tweepy, Bitly Api
+Libraries used : BeautifulSoup, Tweepy, Bitly Api, Selenium
 
 ## NBA Scores resource:
-https://www.basketball-reference.com/boxscores/
+http://www.espn.com/nba/scoreboard
