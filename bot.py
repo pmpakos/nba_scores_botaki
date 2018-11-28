@@ -24,7 +24,7 @@ bitly = bitly_api.Connection(access_token=ACCESS_TOKEN_BITLY)
 
 
 CHROME_PATH = '/usr/bin/google-chrome'
-CHROMEDRIVER_PATH = os.path.join(os.getcwd(), 'chromedriver')
+CHROMEDRIVER_PATH = '/usr/bin/chromedriver'
 WINDOW_SIZE = "1920,1080"
 
 chrome_options = webdriver.chrome.options.Options()  
