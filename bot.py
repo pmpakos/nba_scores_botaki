@@ -84,6 +84,12 @@ def create_tweet(result):
     
     
 date = str(datetime.date.today()-datetime.timedelta(1)).split('-')
+latest_tweet_date = str(api.user_timeline(id = api.me().id, count = 1)[0].created_at)[0:10]
+todays_date = str(datetime.date.today())[0:10]
+if(latest_tweet_date == todays_date):
+    print('Already tweeted for today, tomorrow again!')
+    exit()
+
 urlpage = 'http://www.espn.com/nba/scoreboard/_/date/'+date[0]+date[1]+date[2]
 
 driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
