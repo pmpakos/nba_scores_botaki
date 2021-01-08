@@ -24,7 +24,7 @@ bitly = bitly_api.Connection(access_token=ACCESS_TOKEN_BITLY)
 
 
 CHROME_PATH = '/usr/bin/google-chrome'
-CHROMEDRIVER_PATH = '/usr/bin/chromedriver'
+CHROMEDRIVER_PATH = './chromedriver'
 WINDOW_SIZE = "1920,1080"
 
 chrome_options = webdriver.chrome.options.Options()  
@@ -70,7 +70,7 @@ def create_tweet(result):
     playbyplay = base_url + "/nba/playbyplay?gameId=" + gameId
     gamecast = base_url + "/nba/game?gameId=" + gameId
 
-    base_bitly = "bit.ly/"
+    base_bitly = "es.pn/"
     recap = "Recap\t\t : " + base_bitly + bitly.shorten(recap)['hash']
     boxscore = "Boxscore\t : " + base_bitly + bitly.shorten(boxscore)['hash']
     play_by_play = "Play-By-Play\t : " + base_bitly + bitly.shorten(play_by_play)['hash']
