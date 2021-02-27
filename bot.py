@@ -24,7 +24,7 @@ bitly = bitly_api.Connection(access_token=ACCESS_TOKEN_BITLY)
 
 
 CHROME_PATH = '/usr/bin/google-chrome'
-CHROMEDRIVER_PATH = './chromedriver'
+CHROMEDRIVER_PATH = '/mnt/various/nba_scores_botaki/chromedriver'
 WINDOW_SIZE = "1920,1080"
 
 chrome_options = webdriver.chrome.options.Options()  
@@ -110,4 +110,3 @@ for result in results:
     print(reso1,'\n')
     api.update_status(reso1)
     time.sleep(10)
-    
