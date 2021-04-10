@@ -57,18 +57,13 @@ def create_tweet(result):
     score = " ".join((fullnames_dict[away_team_name],"("+handles_dict[away_team_name]+")",away_score,'-', fullnames_dict[home_team_name],"("+handles_dict[home_team_name]+")" ,home_score))    
     #####################################################################v
     links = result.find('section',attrs={'class':'sb-actions'}).find_all('a')
-    gameId = find_between(str(links[0]),"gameId=","\"")
+    gameId = find_between(str(links[0]),"/gameId/","\"")
     
     base_url = "http://www.espn.com"
     recap = base_url + "/nba/recap?gameId=" + gameId
-    boxscore = base_url + "/nba/boxscore?gameId=" + gameId
-    play_by_play = base_url + "/nba/playbyplay?gameId=" + gameId
-    gamecast = base_url + "/nba/game?gameId=" + gameId
-
-    recap = base_url + "/nba/recap?gameId=" + gameId
-    boxscore = base_url + "/nba/boxscore?gameId=" + gameId
-    playbyplay = base_url + "/nba/playbyplay?gameId=" + gameId
-    gamecast = base_url + "/nba/game?gameId=" + gameId
+    boxscore = base_url + "/nba/boxscore/_/gameId/" + gameId
+    play_by_play = base_url + "/nba/playbyplay/_/gameId/" + gameId
+    gamecast = base_url + "/nba/game/_/gameId/" + gameId
 
     base_bitly = "es.pn/"
     recap = "Recap\t\t : " + base_bitly + bitly.shorten(recap)['hash']
