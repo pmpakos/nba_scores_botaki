@@ -42,21 +42,21 @@ def find_between(s,first,last):
 
 
 def create_tweet(result):
-    #####################################################################v
-    match = result.find('tbody',attrs={'id':'teams'})        
+    #####################################################################
+    match = result.find('ul',attrs={'class':'ScoreboardScoreCell__Competitors'})
 
-    home_team = match.find('tr',attrs={'class':'home'})
-    away_team = match.find('tr',attrs={'class':'away'})
+    home_team = match.find('li',attrs={'class':'ScoreboardScoreCell__Item--home'})
+    away_team = match.find('li',attrs={'class':'ScoreboardScoreCell__Item--away'})
 
-    home_team_name = find_between(str(home_team.find('span',attrs={'class':'sb-team-short'})),"short\">","</span>")
-    away_team_name = find_between(str(away_team.find('span',attrs={'class':'sb-team-short'})),"short\">","</span>")
+    home_team_name = find_between(str(home_team.find('div',attrs={'class':'ScoreCell__TeamName--shortDisplayName'})),"db\">","</div>")
+    away_team_name = find_between(str(away_team.find('div',attrs={'class':'ScoreCell__TeamName--shortDisplayName'})),"db\">","</div>")
     
-    home_score = find_between(str(home_team.find('td',attrs={'class':'total'})),"<span>","</span>")
-    away_score = find_between(str(away_team.find('td',attrs={'class':'total'})),"<span>","</span>")
+    home_score = find_between(str(home_team.find('div',attrs={'class':'ScoreCell_Score--scoreboard'})),"pl2\">","</div>")
+    away_score = find_between(str(away_team.find('div',attrs={'class':'ScoreCell_Score--scoreboard'})),"pl2\">","</div>")
     
     score = " ".join((fullnames_dict[away_team_name],"("+handles_dict[away_team_name]+")",away_score,'-', fullnames_dict[home_team_name],"("+handles_dict[home_team_name]+")" ,home_score))    
     #####################################################################v
-    links = result.find('section',attrs={'class':'sb-actions'}).find_all('a')
+    links = result.find('div',attrs={'class':'Scoreboard__Callouts flex flex-column ph4 mv4 items-center'}).find_all('a')
     gameId = find_between(str(links[0]),"/gameId/","\"")
     
     base_url = "http://www.espn.com"
@@ -73,10 +73,7 @@ def create_tweet(result):
     urls="".join((recap, "\n", boxscore, "\n", play_by_play,"\n",gamecast))
 
     tweet = "".join((score,"\n",urls))
-    return tweet
-
-        
-    
+    return tweet    
     
 date = str(datetime.date.today()-datetime.timedelta(1)).split('-')
 latest_tweet_date = str(api.user_timeline(id = api.me().id, count = 1)[0].created_at)[0:10]
@@ -96,8 +93,8 @@ driver.quit()
 soup = BeautifulSoup(res,'lxml')
 
 # find results within table
-table = soup.find('div',attrs={'id':'events'})
-results = table.find_all('article',attrs={'class':'scoreboard'})
+table = soup.find('section',attrs={'class':'Card gameModules'})
+results = table.find_all('section',attrs={'class':'Scoreboard bg-clr-white flex flex-auto justify-between'})
 
 print(len(results),'NBA Games on ',date[1],'-',date[2],'-',date[0],'\n')
 for result in results:
