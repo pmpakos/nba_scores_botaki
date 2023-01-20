@@ -24,12 +24,12 @@ bitly = bitly_api.Connection(access_token=ACCESS_TOKEN_BITLY)
 
 
 CHROME_PATH = '/usr/bin/google-chrome'
-CHROMEDRIVER_PATH = '/mnt/various/nba_scores_botaki/chromedriver'
-WINDOW_SIZE = "1920,1080"
+CHROMEDRIVER_PATH = '/mnt/various/BOTS/nba_scores_botaki/chromedriver'
+WINDOW_SIZE = '1920,1080'
 
 chrome_options = webdriver.chrome.options.Options()  
-chrome_options.add_argument("--headless")  
-chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
+chrome_options.add_argument('--headless')  
+chrome_options.add_argument('--window-size=%s' % WINDOW_SIZE)
 chrome_options.binary_location = CHROME_PATH
 
 def find_between(s,first,last):
@@ -38,7 +38,7 @@ def find_between(s,first,last):
         end = s.index( last, start )
         return s[start:end]
     except ValueError:
-        return ""
+        return ''
 
 
 def create_tweet(result):
@@ -54,25 +54,28 @@ def create_tweet(result):
     home_score = find_between(str(home_team.find('div',attrs={'class':'ScoreCell_Score--scoreboard'})),"pl2\">","</div>")
     away_score = find_between(str(away_team.find('div',attrs={'class':'ScoreCell_Score--scoreboard'})),"pl2\">","</div>")
     
-    score = " ".join((fullnames_dict[away_team_name],"("+handles_dict[away_team_name]+")",away_score,'-', fullnames_dict[home_team_name],"("+handles_dict[home_team_name]+")" ,home_score))    
+    score = ' '.join((fullnames_dict[away_team_name],'('+handles_dict[away_team_name]+')',away_score,'-', fullnames_dict[home_team_name],'('+handles_dict[home_team_name]+')' ,home_score))
+    hashtags = ' '.join((hashtags_dict[away_team_name],hashtags_dict[home_team_name]))
+    hashtags2 = ' '.join(('#NBA', '#NBATwitter'))
     #####################################################################v
-    links = result.find('div',attrs={'class':'Scoreboard__Callouts flex flex-column ph4 mv4 items-center'}).find_all('a')
-    gameId = find_between(str(links[0]),"/gameId/","\"")
+    links = result.find('div',attrs={'class':'Scoreboard__Callouts flex items-center mv4 flex-column'}).find_all('a')
+
+    gameId = find_between(str(links[0]),'/gameId/',"\"")
     
-    base_url = "http://www.espn.com"
-    recap = base_url + "/nba/recap?gameId=" + gameId
-    boxscore = base_url + "/nba/boxscore/_/gameId/" + gameId
-    play_by_play = base_url + "/nba/playbyplay/_/gameId/" + gameId
-    gamecast = base_url + "/nba/game/_/gameId/" + gameId
+    base_url = 'http://www.espn.com'
+    recap = base_url + '/nba/recap?gameId=' + gameId
+    boxscore = base_url + '/nba/boxscore/_/gameId/' + gameId
+    play_by_play = base_url + '/nba/playbyplay/_/gameId/' + gameId
+    gamecast = base_url + '/nba/game/_/gameId/' + gameId
 
-    base_bitly = "es.pn/"
-    recap = "Recap\t\t : " + base_bitly + bitly.shorten(recap)['hash']
-    boxscore = "Boxscore\t : " + base_bitly + bitly.shorten(boxscore)['hash']
-    play_by_play = "Play-By-Play\t : " + base_bitly + bitly.shorten(play_by_play)['hash']
+    base_bitly = 'es.pn/'
+    recap = 'Recap\t\t : ' + base_bitly + bitly.shorten(recap)['hash']
+    boxscore = 'Boxscore\t : ' + base_bitly + bitly.shorten(boxscore)['hash']
+    play_by_play = 'Play-By-Play\t : ' + base_bitly + bitly.shorten(play_by_play)['hash']
     gamecast = base_bitly + bitly.shorten(gamecast)['hash']
-    urls="".join((recap, "\n", boxscore, "\n", play_by_play,"\n",gamecast))
+    urls=''.join((recap, '\n', boxscore, '\n', play_by_play,'\n', hashtags, '\n', hashtags2, '\n', gamecast))
 
-    tweet = "".join((score,"\n",urls))
+    tweet = ''.join((score,'\n',urls))
     return tweet    
     
 date = str(datetime.date.today()-datetime.timedelta(1)).split('-')
@@ -82,11 +85,11 @@ if(latest_tweet_date == todays_date):
     print('Already tweeted for today, tomorrow again!')
     exit()
 
-urlpage = 'http://www.espn.com/nba/scoreboard/_/date/'+date[0]+date[1]+date[2]
+urlpage = 'https://www.espn.com/nba/scoreboard/_/date/'+date[0]+date[1]+date[2]
 
 driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH, chrome_options=chrome_options)
 driver.get(urlpage)
-res = driver.execute_script("return document.documentElement.outerHTML")
+res = driver.execute_script('return document.documentElement.outerHTML')
 driver.quit()
 
 # parse the html using beautiful soup and store in variable 'soup'
